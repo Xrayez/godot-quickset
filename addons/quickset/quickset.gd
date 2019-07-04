@@ -7,7 +7,7 @@ const PLUGIN_CONFIG = 'editor_settings.cfg'
 const PLUGIN_EDITOR_SETTINGS_SECTION = 'editor_settings'
 #const PLUGIN_PROJECT_SETTINGS_SECTION = 'project_settings' # TODO
 
-const SettingField = preload("res://addons/quickset/setting.tscn")
+const Entry = preload("res://addons/quickset/entry.tscn")
 
 var dock
 var settings_dialog
@@ -20,34 +20,34 @@ var settings_map = {}
 
 
 func _enter_tree():
-	editor_settings.connect('settings_changed', self, '_on_editor_settings_changed')
-
+	# Add dock
 	dock = preload("dock.tscn").instance()
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, dock)
 	dock.get_node("buttons/add_button").connect("pressed", self, "_on_add_pressed")
 	dock.get_node("buttons/clear_button").connect("pressed", self, "_on_clear_pressed")
 
+	# Settings dialog to pick from
 	settings_dialog = dock.get_node('settings_dialog')
 	settings_dialog.connect("confirmed", self, "_on_setting_confirmed")
 	settings_dialog.connect('setting_selected', self, "_on_setting_selected")
 
+	# Dialog to clear all entries
 	clear_dialog = dock.get_node('clear_dialog')
 	clear_dialog.connect("confirmed", self, "_on_clear_confirmed")
 
-	_update_settings_list()
-
-	_load_settings()
+	# Editor settings
+	editor_settings.connect('settings_changed', self, '_on_editor_settings_changed')
+	_update_settings_map()
+	_load_settings() # from PLUGIN_CONFIG
 
 
 func _load_settings():
-	var dir = editor_settings.get_settings_dir()
-	var home = dir.plus_file(PLUGIN_DIR)
-	var path = home.plus_file(PLUGIN_CONFIG)
+	var path = get_config_path()
 
 	var fs = Directory.new()
 	if not fs.file_exists(path):
 		var config = ConfigFile.new()
-		fs.make_dir_recursive(home)
+		fs.make_dir_recursive(path.get_base_dir())
 		config.save(path)
 	else:
 		plugin_config.load(path)
@@ -64,19 +64,23 @@ func _populate_settings(settings : PoolStringArray):
 
 
 func _on_editor_settings_changed():
-	_update_settings_list()
+	_update_settings_map()
 
 
 func _save_settings():
+	plugin_config.save(get_config_path())
+
+
+func get_config_path():
 	var dir = editor_settings.get_settings_dir()
 	var home = dir.plus_file(PLUGIN_DIR)
 	var path = home.plus_file(PLUGIN_CONFIG)
 
-	plugin_config.save(path)
+	return path
 
 
 func _on_add_pressed():
-	_update_settings_list()
+	_update_settings_map()
 	settings_dialog.popup_centered()
 
 
@@ -110,14 +114,14 @@ func _exit_tree():
 
 func add_editor_setting(p_setting):
 
-	var field = SettingField.instance()
+	var field = Entry.instance()
 	field.set_setting_name(p_setting)
 
 	var value = editor_settings.get_setting(p_setting)
 	var hint = get_setting_hint_string(p_setting)
 
 	field.set_setting_value(value, hint)
-	field.connect('changed', self, '_on_setting_field_changed')
+	field.connect('changed', self, '_on_entry_changed')
 
 	plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
 
@@ -131,12 +135,12 @@ func clear_settings():
 		opt.queue_free()
 
 
-func _on_setting_field_changed(setting, value):
+func _on_entry_changed(setting, value):
 	assert(editor_settings.has_setting(setting))
 	editor_settings.set_setting(setting, value)
 
 
-func _update_settings_list():
+func _update_settings_map():
 
 	var o = editor_settings
 
@@ -188,6 +192,12 @@ func _update_settings_list():
 			if i == sectionarr.size() - 1:
 				# doesn't have children, make selectable
 				sections_map[metasection].set_selectable(0, true)
+
+
+func get_setting_type(p_setting):
+	assert(not settings_map.empty())
+
+	return settings_map[p_setting].type
 
 
 func get_setting_hint_string(p_setting):

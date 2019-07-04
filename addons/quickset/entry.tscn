@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=2]
 
-[ext_resource path="res://addons/quickset/setting.gd" type="Script" id=1]
+[ext_resource path="res://addons/quickset/entry.gd" type="Script" id=1]
 
 [node name="setting" type="VBoxContainer"]
 margin_bottom = 18.0
