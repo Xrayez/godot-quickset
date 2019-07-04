@@ -3,7 +3,8 @@
 [ext_resource path="res://addons/quickset/entry.gd" type="Script" id=1]
 
 [node name="setting" type="VBoxContainer"]
-margin_bottom = 18.0
+margin_right = 12.0
+margin_bottom = 42.0
 size_flags_horizontal = 3
 size_flags_vertical = 0
 script = ExtResource( 1 )
@@ -12,8 +13,11 @@ __meta__ = {
 }
 
 [node name="name" type="Label" parent="."]
+margin_right = 12.0
 margin_bottom = 14.0
+autowrap = true
 
 [node name="value" type="Control" parent="."]
 margin_top = 18.0
+margin_right = 12.0
 margin_bottom = 18.0

@@ -7,7 +7,11 @@ const PLUGIN_CONFIG = 'editor_settings.cfg'
 const PLUGIN_EDITOR_SETTINGS_SECTION = 'editor_settings'
 #const PLUGIN_PROJECT_SETTINGS_SECTION = 'project_settings' # TODO
 
-const Entry = preload("res://addons/quickset/entry.tscn")
+const Entry = preload("entry.gd")
+const EntryScene = preload("entry.tscn")
+const EntryInspectorPlugin = preload("entry_inspector_plugin.gd")
+
+var entry_inspector_plugin = EntryInspectorPlugin.new()
 
 var dock
 var dock_entries
@@ -40,6 +44,8 @@ func _enter_tree():
 	clear_dialog = dock.get_node('clear_dialog')
 	clear_dialog.connect("confirmed", self, "_on_clear_confirmed")
 
+	add_inspector_plugin(entry_inspector_plugin)
+
 	# Editor settings
 	editor_settings.connect('settings_changed', self, '_on_editor_settings_changed')
 	_update_settings_map()
@@ -62,25 +68,27 @@ func _load_settings():
 
 func _update_entries():
 
-	if not plugin_config.has_section(PLUGIN_EDITOR_SETTINGS_SECTION):
-		_update_queued = false
-		return # empty
+	if plugin_config.has_section(PLUGIN_EDITOR_SETTINGS_SECTION):
 
-	_clear_entries() # existing ones
+		_clear_entries() # existing ones
 
-	var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
+		var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
 
-	for s in settings:
-		var entry = Entry.instance()
-		entry.set_setting_name(s)
+		for s in settings:
+			var entry = EntryScene.instance()
+			entry.set_setting_name(s)
 
-		var value = editor_settings.get_setting(s)
-		var hint = get_setting_hint_string(s)
+			var value = editor_settings.get_setting(s)
+			var hint = get_setting_hint_string(s)
 
-		entry.set_setting_value(value, hint)
-		entry.connect('changed', self, '_on_entry_changed')
+			var err = entry.set_setting_value(value, hint)
+			if err:
+				continue
 
-		dock_entries.add_child(entry)
+			entry.connect('selected', self, '_on_entry_selected', [entry])
+			entry.connect('changed', self, '_on_entry_changed')
+
+			dock_entries.add_child(entry)
 
 	_update_queued = false
 
@@ -140,6 +148,8 @@ func _exit_tree():
 	remove_control_from_docks(dock)
 	dock.queue_free()
 
+	remove_inspector_plugin(entry_inspector_plugin)
+
 
 func _queue_update():
 
@@ -158,6 +168,10 @@ func _clear_entries():
 	for idx in dock_entries.get_child_count():
 		var entry = dock_entries.get_child(idx)
 		entry.queue_free()
+
+
+func _on_entry_selected(entry):
+	pass
 
 
 func _on_entry_changed(setting, value):
