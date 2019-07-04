@@ -18,6 +18,8 @@ var plugin_config = ConfigFile.new()
 
 var settings_map = {}
 
+var _update_queued = false
+
 
 func _enter_tree():
 	# Add dock
@@ -51,16 +53,33 @@ func _load_settings():
 		config.save(path)
 	else:
 		plugin_config.load(path)
-		var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
-		_populate_settings(settings)
+
+	_queue_update()
 
 
-func _populate_settings(settings : PoolStringArray):
+func _update_entries():
 
-	clear_settings()
+	if not plugin_config.has_section(PLUGIN_EDITOR_SETTINGS_SECTION):
+		_update_queued = false
+		return # empty
+
+	_clear_entries() # existing ones
+
+	var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
 
 	for s in settings:
-		add_editor_setting(s)
+		var field = Entry.instance()
+		field.set_setting_name(s)
+
+		var value = editor_settings.get_setting(s)
+		var hint = get_setting_hint_string(s)
+
+		field.set_setting_value(value, hint)
+		field.connect('changed', self, '_on_entry_changed')
+
+		dock.get_node('panel/editor/options').add_child(field)
+
+	_update_queued = false
 
 
 func _on_editor_settings_changed():
@@ -89,22 +108,29 @@ func _on_clear_pressed():
 
 
 func _on_clear_confirmed():
-	clear_settings()
+	_clear_entries()
+	_clear_settings()
+	_save_settings()
 
+
+func _clear_settings():
 	# Clear from config
 	var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
 	for s in settings:
 		plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, s, null) # delete
-
-	_save_settings()
 
 
 func _on_setting_confirmed():
 	pass
 
 
-func _on_setting_selected(setting):
-	add_editor_setting(setting)
+func _on_setting_selected(p_setting):
+
+	var value = editor_settings.get_setting(p_setting)
+	plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
+	_save_settings()
+
+	_queue_update()
 
 
 func _exit_tree():
@@ -112,25 +138,20 @@ func _exit_tree():
 	dock.queue_free()
 
 
-func add_editor_setting(p_setting):
+func _queue_update():
 
-	var field = Entry.instance()
-	field.set_setting_name(p_setting)
+	if not is_inside_tree():
+		return
 
-	var value = editor_settings.get_setting(p_setting)
-	var hint = get_setting_hint_string(p_setting)
+	if _update_queued:
+		return
 
-	field.set_setting_value(value, hint)
-	field.connect('changed', self, '_on_entry_changed')
+	_update_queued = true
 
-	plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
-
-	dock.get_node('panel/editor/options').add_child(field)
-
-	_save_settings()
+	call_deferred("_update_entries")
 
 
-func clear_settings():
+func _clear_entries():
 	for opt in dock.get_node('panel/editor/options').get_children():
 		opt.queue_free()
 
