@@ -77,8 +77,8 @@ func _on_setting_confirmed():
 	pass
 
 
-func _on_setting_selected(setting, hint):
-	add_editor_setting(setting, hint)
+func _on_setting_selected(setting):
+	add_editor_setting(setting)
 
 
 func _exit_tree():
@@ -86,13 +86,14 @@ func _exit_tree():
 	dock.queue_free()
 
 
-func add_editor_setting(p_setting, hint):
+func add_editor_setting(p_setting):
 
 	var field = SettingField.instance()
 	field.set_setting_name(p_setting)
 
 	var value = editor_settings.get_setting(p_setting)
 
+	var hint = get_setting_hint_string(p_setting)
 	field.set_setting_value(value, hint)
 	field.connect('changed', self, '_on_setting_field_changed')
 	plugin_editor_settings.set_value('editor_settings', p_setting, value)
@@ -121,6 +122,7 @@ func _update_settings_list():
 	root.create_item()
 
 	settings_map.clear()
+	var sections_map = {}
 
 	for pi in pinfo:
 
@@ -134,22 +136,22 @@ func _update_settings_list():
 
 		var sectionarr = pi.name.split("/")
 		var metasection = ""
-		settings_map[metasection] = root
+		sections_map[metasection] = root
 
 		for i in sectionarr.size():
-			var parent = settings_map[metasection]
+			var parent = sections_map[metasection]
 
 			if i > 0:
 				metasection += "/" + sectionarr[i]
 			else:
 				metasection = sectionarr[i]
 
-			if not settings_map.has(metasection):
+			if not sections_map.has(metasection):
 				var ms = root.create_item(parent)
-				settings_map[metasection] = ms
+				sections_map[metasection] = ms
+				settings_map[metasection] = pi
 				ms.set_text(0, sectionarr[i].capitalize())
 				ms.set_metadata(0, metasection)
-				ms.set_meta('hint', pi.hint_string)
 				ms.set_selectable(0, false)
 
 				if ms.get_parent():
@@ -157,10 +159,10 @@ func _update_settings_list():
 
 			if i == sectionarr.size() - 1:
 				# doesn't have children, make selectable
-				settings_map[metasection].set_selectable(0, true)
+				sections_map[metasection].set_selectable(0, true)
 
 
 func get_setting_hint_string(p_setting):
 	assert(not settings_map.empty())
 
-	return settings_map[p_setting]
+	return settings_map[p_setting].hint_string
