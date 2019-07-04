@@ -65,3 +65,8 @@ text = "Clear"
 margin_top = 494.0
 margin_right = 385.0
 margin_bottom = 564.0
+
+[node name="clear_dialog" type="ConfirmationDialog" parent="."]
+margin_right = 200.0
+margin_bottom = 70.0
+dialog_text = "This will clear all custom settings."
