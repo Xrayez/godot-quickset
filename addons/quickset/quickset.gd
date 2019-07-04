@@ -10,6 +10,8 @@ const PLUGIN_EDITOR_SETTINGS_SECTION = 'editor_settings'
 const Entry = preload("res://addons/quickset/entry.tscn")
 
 var dock
+var dock_entries
+
 var settings_dialog
 var clear_dialog
 
@@ -27,6 +29,7 @@ func _enter_tree():
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, dock)
 	dock.get_node("buttons/add_button").connect("pressed", self, "_on_add_pressed")
 	dock.get_node("buttons/clear_button").connect("pressed", self, "_on_clear_pressed")
+	dock_entries = dock.get_node('panel/scroll/entries')
 
 	# Settings dialog to pick from
 	settings_dialog = dock.get_node('settings_dialog')
@@ -68,16 +71,16 @@ func _update_entries():
 	var settings = plugin_config.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
 
 	for s in settings:
-		var field = Entry.instance()
-		field.set_setting_name(s)
+		var entry = Entry.instance()
+		entry.set_setting_name(s)
 
 		var value = editor_settings.get_setting(s)
 		var hint = get_setting_hint_string(s)
 
-		field.set_setting_value(value, hint)
-		field.connect('changed', self, '_on_entry_changed')
+		entry.set_setting_value(value, hint)
+		entry.connect('changed', self, '_on_entry_changed')
 
-		dock.get_node('panel/editor/options').add_child(field)
+		dock_entries.add_child(entry)
 
 	_update_queued = false
 
@@ -152,8 +155,9 @@ func _queue_update():
 
 
 func _clear_entries():
-	for opt in dock.get_node('panel/editor/options').get_children():
-		opt.queue_free()
+	for idx in dock_entries.get_child_count():
+		var entry = dock_entries.get_child(idx)
+		entry.queue_free()
 
 
 func _on_entry_changed(setting, value):
