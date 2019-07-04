@@ -1,7 +1,9 @@
 tool
 extends EditorPlugin
 
-const QUICKSET_DIR = "quickset"
+const PLUGIN_DIR = 'plugins/quickset'
+const PLUGIN_EDITOR_SETTINGS_CONFIG = 'editor_settings.cfg'
+const PLUGIN_EDITOR_SETTINGS_SECTION = 'editor_settings'
 
 const SettingField = preload("res://addons/quickset/setting.tscn")
 
@@ -37,8 +39,8 @@ func _enter_tree():
 
 func _load_settings():
 	var dir = editor_settings.get_settings_dir()
-	var home = dir.plus_file(QUICKSET_DIR)
-	var path = home.plus_file('editor_settings.cfg')
+	var home = dir.plus_file(PLUGIN_DIR)
+	var path = home.plus_file(PLUGIN_EDITOR_SETTINGS_CONFIG)
 
 	var fs = Directory.new()
 	if not fs.file_exists(path):
@@ -47,7 +49,7 @@ func _load_settings():
 		config.save(path)
 	else:
 		plugin_editor_settings.load(path)
-		var settings = plugin_editor_settings.get_section_keys('editor_settings')
+		var settings = plugin_editor_settings.get_section_keys(PLUGIN_EDITOR_SETTINGS_SECTION)
 		_populate_settings(settings)
 
 
@@ -67,8 +69,8 @@ func _on_editor_settings_changed():
 
 func _save_settings():
 	var dir = editor_settings.get_settings_dir()
-	var home = dir.plus_file(QUICKSET_DIR)
-	var path = home.plus_file('editor_settings.cfg')
+	var home = dir.plus_file(PLUGIN_DIR)
+	var path = home.plus_file(PLUGIN_EDITOR_SETTINGS_CONFIG)
 
 	plugin_editor_settings.save(path)
 
@@ -102,7 +104,7 @@ func add_editor_setting(p_setting):
 	field.set_setting_value(value, hint)
 	field.connect('changed', self, '_on_setting_field_changed')
 
-	plugin_editor_settings.set_value('editor_settings', p_setting, value)
+	plugin_editor_settings.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
 
 	dock.get_node('panel/editor/options').add_child(field)
 
