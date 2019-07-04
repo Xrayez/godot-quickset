@@ -30,6 +30,8 @@ func _enter_tree():
 
 	editor_settings.connect('settings_changed', self, '_on_editor_settings_changed')
 
+	_update_settings_list()
+
 	_load_settings()
 
 
@@ -50,8 +52,11 @@ func _load_settings():
 
 
 func _populate_settings(settings : PoolStringArray):
+
+	clear_settings()
+
 	for s in settings:
-		pass
+		add_editor_setting(s)
 
 
 func _on_editor_settings_changed():
@@ -92,15 +97,21 @@ func add_editor_setting(p_setting):
 	field.set_setting_name(p_setting)
 
 	var value = editor_settings.get_setting(p_setting)
-
 	var hint = get_setting_hint_string(p_setting)
+
 	field.set_setting_value(value, hint)
 	field.connect('changed', self, '_on_setting_field_changed')
+
 	plugin_editor_settings.set_value('editor_settings', p_setting, value)
 
 	dock.get_node('panel/editor/options').add_child(field)
 
 	_save_settings()
+
+
+func clear_settings():
+	for opt in dock.get_node('panel/editor/options').get_children():
+		opt.queue_free()
 
 
 func _on_setting_field_changed(setting, value):
