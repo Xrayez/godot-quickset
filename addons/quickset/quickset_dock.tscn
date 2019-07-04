@@ -1,0 +1,67 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/quickset/quickset_select_setting_dialog.tscn" type="PackedScene" id=1]
+
+[node name="Settings" type="VBoxContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_horizontal = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="panel" type="PanelContainer" parent="."]
+margin_right = 1024.0
+margin_bottom = 576.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="editor" type="Label" parent="panel"]
+margin_left = 7.0
+margin_top = 7.0
+margin_right = 1017.0
+margin_bottom = 569.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Editor settings"
+
+[node name="options" type="VBoxContainer" parent="panel/editor"]
+self_modulate = Color( 0.584314, 0.584314, 0.584314, 1 )
+margin_top = 37.0
+margin_right = 385.0
+margin_bottom = 527.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="buttons" type="HBoxContainer" parent="."]
+margin_top = 580.0
+margin_right = 1024.0
+margin_bottom = 600.0
+alignment = 2
+
+[node name="add_button" type="Button" parent="buttons"]
+margin_right = 680.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 2.0
+text = "Add"
+
+[node name="clear_button" type="Button" parent="buttons"]
+margin_left = 684.0
+margin_right = 1024.0
+margin_bottom = 20.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "Clear"
+
+[node name="settings_dialog" parent="." instance=ExtResource( 1 )]
+margin_top = 494.0
+margin_right = 385.0
+margin_bottom = 564.0

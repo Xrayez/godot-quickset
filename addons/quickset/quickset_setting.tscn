@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://addons/quickset/quickset_setting.gd" type="Script" id=1]
+
+[node name="setting" type="VBoxContainer"]
+margin_bottom = 18.0
+size_flags_horizontal = 3
+size_flags_vertical = 0
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="name" type="Label" parent="."]
+margin_bottom = 14.0
+
+[node name="value" type="Control" parent="."]
+margin_top = 18.0
+margin_bottom = 18.0

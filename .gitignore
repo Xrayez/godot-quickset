@@ -1,0 +1,25 @@
+# Godot
+.fscache
+.import
+export.cfg
+export_presets.cfg
+*.translation
+
+# Editors
+.vscode
+
+# Python
+__pycache__
+
+# Binary
+bin
+*.exe
+*.obj
+
+# Temp files
+tmp
+*.*~
+*autosave*
+
+# Scons
+.sconsign.dblite
