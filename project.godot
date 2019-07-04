@@ -15,7 +15,7 @@ _global_script_class_icons={
 
 [application]
 
-run/main_scene="res://addons/quickset/Node2D.tscn"
+run/main_scene="res://test.tscn"
 
 [editor_plugins]
 

@@ -3,7 +3,7 @@ extends EditorPlugin
 
 const QUICKSET_DIR = "quickset"
 
-const SettingField = preload("res://addons/quickset/quickset_setting.tscn")
+const SettingField = preload("res://addons/quickset/setting.tscn")
 
 var dock
 var settings_dialog
@@ -19,7 +19,7 @@ var settings_map = {}
 
 
 func _enter_tree():
-	dock = preload("quickset_dock.tscn").instance()
+	dock = preload("dock.tscn").instance()
 	add_control_to_dock(DOCK_SLOT_LEFT_BR, dock)
 
 	dock.get_node("buttons/add_button").connect("pressed", self, "_on_add_pressed")
