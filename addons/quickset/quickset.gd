@@ -181,12 +181,12 @@ func _on_entry_changed(setting, value):
 
 func _update_settings_map():
 
-	var o = editor_settings
+	# Adapted from editor/editor_sectioned_inspector.cpp: update_category_list()
 
-	if not o:
+	if editor_settings == null:
 		return
 
-	var pinfo = o.get_property_list()
+	var pinfo = editor_settings.get_property_list()
 
 	var root = settings_dialog.get_node('settings')
 	root.clear()
