@@ -3,6 +3,7 @@ extends EditorPlugin
 
 const PLUGIN_DIR = 'plugins/quickset'
 const PLUGIN_CONFIG = 'editor_settings.cfg'
+const PLUGIN_URL = 'https://github.com/Xrayez/godot-quickset'
 
 const PLUGIN_EDITOR_SETTINGS_SECTION = 'editor_settings'
 #const PLUGIN_PROJECT_SETTINGS_SECTION = 'project_settings' # TODO
@@ -76,15 +77,11 @@ func _update_entries():
 
 		for s in settings:
 			var entry = EntryScene.instance()
-			entry.set_setting_name(s)
 
-			var value = editor_settings.get_setting(s)
-			var hint = get_setting_hint_string(s)
+			var value = get_setting_value(s)
+			var hint_string = get_setting_hint_string(s)
 
-			var err = entry.set_setting_value(value, hint)
-			if err:
-				continue
-
+			entry.create(s, value, hint_string)
 			entry.connect('selected', self, '_on_entry_selected', [entry])
 			entry.connect('changed', self, '_on_entry_changed')
 
@@ -138,8 +135,15 @@ func _on_setting_confirmed():
 func _on_setting_selected(p_setting):
 
 	var value = editor_settings.get_setting(p_setting)
-	plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
-	_save_settings()
+
+	var type = typeof(value)
+	if type == TYPE_BOOL or type == TYPE_INT or type == TYPE_REAL or type == TYPE_STRING:
+		# Only these are supported for now
+		plugin_config.set_value(PLUGIN_EDITOR_SETTINGS_SECTION, p_setting, value)
+		_save_settings()
+	else:
+		push_error("Quickset plugin: unsupported setting type for '%s'" % [p_setting])
+		push_error("Please contribute to %s" % [PLUGIN_URL])
 
 	_queue_update()
 
@@ -180,10 +184,10 @@ func _on_entry_changed(setting, value):
 
 
 func _update_settings_map():
-
+	
 	# Adapted from editor/editor_sectioned_inspector.cpp: update_category_list()
 
-	if editor_settings == null:
+	if not editor_settings:
 		return
 
 	var pinfo = editor_settings.get_property_list()
@@ -231,6 +235,10 @@ func _update_settings_map():
 			if i == sectionarr.size() - 1:
 				# doesn't have children, make selectable
 				sections_map[metasection].set_selectable(0, true)
+
+
+func get_setting_value(p_setting):
+	return editor_settings.get_setting(p_setting)
 
 
 func get_setting_type(p_setting):

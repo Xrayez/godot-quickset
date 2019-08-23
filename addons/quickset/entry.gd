@@ -8,22 +8,12 @@ var setting_name
 var setting_value
 
 
-func set_setting_name(p_name):
+func create(p_name, p_value, p_hint_string = ""):
+
 	setting_name = p_name
-
-	var sectionarr = p_name.split("/")
-
-	var fullname = ""
-
-	for sec in sectionarr:
-		fullname += sec.capitalize() + " "
-
-	$name.text = str(fullname)
-
-
-func set_setting_value(p_value, p_hint = ""):
-
 	setting_value = p_value
+
+	$name.text = get_setting_readable_name(setting_name)
 
 	if has_node('value'):
 		get_node('value').queue_free()
@@ -33,11 +23,17 @@ func set_setting_value(p_value, p_hint = ""):
 
 	match typeof(p_value):
 
+		TYPE_BOOL:
+			input = CheckBox.new()
+			input.pressed = p_value
+			input.text = tr("On")
+			input.connect("pressed", self, "_on_checkbox_pressed", [input])
+
 		TYPE_INT:
-			if not p_hint.empty():
+			if not p_hint_string.empty():
 				input = OptionButton.new()
 
-				var options = p_hint.split(',')
+				var options = p_hint_string.split(',')
 				for opt in options:
 					input.add_item(opt)
 
@@ -47,34 +43,49 @@ func set_setting_value(p_value, p_hint = ""):
 				input = LineEdit.new()
 				input.text = str(p_value)
 
-		TYPE_STRING:
-			input = LineEdit.new()
-			input.connect('text_changed', self, '_on_string_text_changed')
-			input.text = str(p_value)
-
 		TYPE_REAL:
 			input = LineEdit.new()
 			input.connect('text_changed', self, '_on_real_text_changed')
 			input.text = str(p_value)
 
-		TYPE_BOOL:
-			input = CheckBox.new()
-			input.pressed = p_value
-			input.text = tr("On")
-			input.connect("pressed", self, "_on_checkbox_pressed", [input])
+		TYPE_STRING:
+			input = LineEdit.new()
+			input.connect('text_changed', self, '_on_string_text_changed')
+			input.text = str(p_value)
 
-	var err = input == null
+#		TYPE_VECTOR2:
+#			var x = LineEdit.new()
+#			var y = LineEdit.new()
+#
+#			x.placeholder_text = "x"
+#			y.placeholder_text = "y"
+#
+#			input = VBoxContainer.new()
+#			input.add_child(x)
+#			input.add_child(y)
+#
+#			x.connect('text_changed', self, '_on_string_text_changed')
+#			y.connect('text_changed', self, '_on_string_text_changed')
 
-	if not err:
-		input.size_flags_horizontal = 0
-		input.size_flags_vertical = 0
+	input.size_flags_horizontal = 0
+	input.size_flags_vertical = 0
 
-		add_child(input)
-		input.name = 'value'
-	else:
-		push_warning("Quickset plugin: unsupported setting type.")
+	add_child(input)
+	input.name = 'value'
 
-	return err
+
+func get_setting_readable_name(p_setting):
+	var sectionarr = p_setting.split("/")
+
+	var fullname = ""
+
+	for i in sectionarr.size():
+		var sec = sectionarr[i]
+		fullname += sec.capitalize()
+		if i < sectionarr.size() - 1:
+			fullname += " "
+
+	return fullname
 
 
 func _on_item_selected(id):
@@ -102,7 +113,7 @@ class VariantEditor:
 	static func create(variant, hint_string = ""):
 		assert(variant != null)
 
-		var editor = HBoxContainer.new()
+		var editor = VBoxContainer.new()
 
 #		match typeof(variant):
 #			TYPE_NIL:
